@@ -1,0 +1,108 @@
+# Git
+.git
+.gitignore
+.gitattributes
+
+# Python
+__pycache__
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+pip-log.txt
+pip-delete-this-directory.txt
+.pytest_cache/
+.coverage
+htmlcov/
+*.cover
+venv/
+ENV/
+env/
+.venv
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+*.sublime-project
+*.sublime-workspace
+.project
+.pydevproject
+.settings/
+
+# Documentation
+*.md
+docs/
+.sphinx/
+_build/
+
+# Testing
+.tox/
+.nox/
+.hypothesis/
+pytest.ini
+tox.ini
+
+# Database
+*.db
+*.sqlite
+*.sqlite3
+demo.db
+
+# Logs
+*.log
+logs/
+
+# OS
+*.exe
+*.dll
+*.so
+*.dylib
+*.egg-info/
+.DS_Store
+Thumbs.db
+
+# Docker
+Dockerfile
+docker-compose.yml
+.dockerignore
+docker/
+
+# Environment files
+.env
+.env.local
+.env.*.local
+
+# reports and snapshots (let them build in container)
+reports/*
+snapshots/*
+exports/*
+data/*
+
+# MacOS
+.AppleDouble
+.LSOverride
+
+# Temporary files
+*.tmp
+*.temp
+~*

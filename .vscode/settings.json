@@ -1,0 +1,8 @@
+{
+    "chat.tools.terminal.autoApprove": {
+        "/^cd \"/Users/maks/Desktop/стартап\" && python -c \"\nfrom gambling_analyzer import GamblingAnalyzer\nimport numpy as np\n\n# Test basic creation and analysis\nga = GamblingAnalyzer\\(fps=7\\.0\\)\npts = np\\.random\\.rand\\(68, 2\\) \\* 200 \\+ 100\nresult = ga\\.analyze\\(\n    landmarks_68=pts,\n    face_bbox=\\(100, 100, 200, 200\\),\n    frame_shape=\\(480, 640\\),\n    blink_count=5,\n    ear_value=0\\.25,\n    yolo_persons=\\[\\]\n\\)\nprint\\('GamblingAnalyzer OK:', result\\['risk_zone'\\]\\)\nprint\\('  blink_rate:', result\\['blink_rate'\\]\\)\nprint\\('  mouth_tension:', result\\['mouth_tension'\\]\\)\nprint\\('  head_velocity:', result\\['head_velocity'\\]\\)\nprint\\('  eye_fixation:', result\\['eye_fixation'\\]\\)\nprint\\('  self_touching:', result\\['self_touching'\\]\\)\nprint\\('  gambling_risk:', result\\['gambling_risk'\\]\\)\nprint\\('  recommendation:', result\\['recommendation'\\]\\)\nprint\\(\\)\nsummary = ga\\.get_summary\\(\\)\nprint\\('Summary:', summary\\)\n\"\n$/": {
+            "approve": true,
+            "matchCommandLine": true
+        }
+    }
+}

@@ -1,0 +1,1861 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Easy Money.Bet — Твой шанс выиграть</title>
+<script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@4.15.0/dist/tf.min.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700;900&family=Rajdhani:wght@300;400;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --gold: #d4af37;
+    --gold-light: #f0d060;
+    --gold-dark: #a08020;
+    --bg: #0a0a0f;
+    --bg2: #111118;
+    --bg3: #1a1a25;
+    --card: #16161f;
+    --card2: #1e1e2a;
+    --green: #00d97e;
+    --red: #ff4444;
+    --blue: #4488ff;
+    --text: #e8e0d0;
+    --text-dim: #888;
+    --border: rgba(212,175,55,0.2);
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'Rajdhani', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* NOISE TEXTURE */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
+    pointer-events: none;
+    z-index: 0;
+    opacity: 0.4;
+  }
+
+  /* HEADER */
+  header {
+    background: linear-gradient(180deg, #0d0d14 0%, transparent 100%);
+    border-bottom: 1px solid var(--border);
+    padding: 0 2rem;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    backdrop-filter: blur(20px);
+  }
+
+  .header-inner {
+    max-width: 1400px;
+    margin: 0 auto;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    height: 64px;
+  }
+
+  .logo {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.6rem;
+    font-weight: 900;
+    background: linear-gradient(135deg, var(--gold), var(--gold-light), var(--gold));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    letter-spacing: -0.5px;
+  }
+
+  .logo span { color: var(--green); -webkit-text-fill-color: var(--green); }
+
+  nav { display: flex; gap: 0.5rem; }
+
+  nav button {
+    background: none;
+    border: 1px solid transparent;
+    color: var(--text-dim);
+    font-family: 'Rajdhani', sans-serif;
+    font-size: 0.9rem;
+    font-weight: 600;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    padding: 0.5rem 1rem;
+    cursor: pointer;
+    border-radius: 4px;
+    transition: all 0.2s;
+  }
+
+  nav button:hover, nav button.active {
+    color: var(--gold);
+    border-color: var(--border);
+    background: rgba(212,175,55,0.05);
+  }
+
+  .header-right { display: flex; align-items: center; gap: 1rem; }
+
+  .balance-display {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 0.4rem 1rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-weight: 700;
+    font-size: 1.1rem;
+  }
+
+  .balance-display .label { color: var(--text-dim); font-size: 0.75rem; letter-spacing: 1px; }
+  .balance-display .amount { color: var(--gold); }
+
+  .btn-deposit {
+    background: linear-gradient(135deg, var(--gold-dark), var(--gold), var(--gold-light));
+    color: #000;
+    border: none;
+    font-family: 'Rajdhani', sans-serif;
+    font-weight: 700;
+    font-size: 0.9rem;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    padding: 0.5rem 1.2rem;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.2s;
+    box-shadow: 0 4px 20px rgba(212,175,55,0.3);
+  }
+
+  .btn-deposit:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 6px 30px rgba(212,175,55,0.5);
+  }
+
+  /* MAIN LAYOUT */
+  main {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 1.5rem 2rem;
+    position: relative;
+    z-index: 1;
+  }
+
+  /* HERO BANNER */
+  .hero {
+    background: linear-gradient(135deg, #0d1117 0%, #1a1030 50%, #0d1117 100%);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 2.5rem;
+    margin-bottom: 2rem;
+    position: relative;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .hero::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    right: -10%;
+    width: 600px;
+    height: 600px;
+    background: radial-gradient(ellipse, rgba(212,175,55,0.08) 0%, transparent 70%);
+    pointer-events: none;
+  }
+
+  .hero-text h1 {
+    font-family: 'Playfair Display', serif;
+    font-size: 2.5rem;
+    font-weight: 900;
+    line-height: 1.1;
+    margin-bottom: 0.5rem;
+  }
+
+  .hero-text h1 .highlight {
+    background: linear-gradient(135deg, var(--gold), var(--gold-light));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+
+  .hero-text p { color: var(--text-dim); font-size: 1.1rem; margin-bottom: 1.5rem; }
+
+  .hero-bonus {
+    background: var(--card);
+    border: 1px solid var(--gold-dark);
+    border-radius: 12px;
+    padding: 1.5rem 2rem;
+    text-align: center;
+    min-width: 220px;
+  }
+
+  .hero-bonus .bonus-amount {
+    font-family: 'Playfair Display', serif;
+    font-size: 3rem;
+    font-weight: 900;
+    color: var(--gold);
+    line-height: 1;
+  }
+
+  .hero-bonus .bonus-label {
+    font-size: 0.85rem;
+    letter-spacing: 2px;
+    color: var(--text-dim);
+    text-transform: uppercase;
+  }
+
+  /* GAME TABS */
+  .section-title {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.4rem;
+    color: var(--gold);
+    margin-bottom: 1rem;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+  }
+
+  .section-title::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: var(--border);
+  }
+
+  .game-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+  }
+
+  /* GAME PANELS */
+  .game-panel {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    overflow: hidden;
+    transition: border-color 0.2s;
+    display: none;
+  }
+
+  .game-panel.active { display: block; }
+  .game-panel:hover { border-color: rgba(212,175,55,0.4); }
+
+  .game-panel-full {
+    grid-column: 1 / -1;
+  }
+
+  .game-header {
+    background: linear-gradient(135deg, var(--bg3), var(--card2));
+    padding: 1rem 1.5rem;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .game-title {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.2rem;
+    color: var(--gold);
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  .game-body { padding: 1.5rem; }
+
+  /* SLOTS */
+  .slots-display {
+    background: var(--bg);
+    border: 2px solid var(--border);
+    border-radius: 12px;
+    padding: 1.5rem;
+    text-align: center;
+    margin-bottom: 1.5rem;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .slots-display::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(180deg, transparent 0%, rgba(212,175,55,0.03) 100%);
+  }
+
+  .reels {
+    display: flex;
+    justify-content: center;
+    gap: 1rem;
+    margin-bottom: 0.5rem;
+  }
+
+  .reel {
+    width: 90px;
+    height: 90px;
+    background: var(--card);
+    border: 2px solid var(--border);
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 2.5rem;
+    transition: all 0.3s;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .reel.spinning {
+    animation: spinReel 0.1s linear infinite;
+  }
+
+  @keyframes spinReel {
+    0% { transform: translateY(0); }
+    50% { transform: translateY(-5px); }
+    100% { transform: translateY(0); }
+  }
+
+  .reel.win {
+    border-color: var(--gold);
+    box-shadow: 0 0 20px rgba(212,175,55,0.4);
+    animation: winPulse 0.5s ease;
+  }
+
+  @keyframes winPulse {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.1); }
+  }
+
+  .win-message {
+    height: 24px;
+    font-size: 1rem;
+    font-weight: 700;
+    color: var(--gold);
+    letter-spacing: 2px;
+  }
+
+  /* CRASH GAME */
+  .crash-display {
+    background: var(--bg);
+    border: 2px solid var(--border);
+    border-radius: 12px;
+    height: 180px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    margin-bottom: 1.5rem;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .crash-multiplier {
+    font-family: 'Playfair Display', serif;
+    font-size: 4rem;
+    font-weight: 900;
+    color: var(--green);
+    transition: color 0.3s;
+    line-height: 1;
+  }
+
+  .crash-multiplier.danger { color: var(--red); }
+
+  .crash-label {
+    font-size: 0.85rem;
+    letter-spacing: 2px;
+    color: var(--text-dim);
+    text-transform: uppercase;
+    margin-top: 0.25rem;
+  }
+
+  .crash-bar {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    height: 3px;
+    background: var(--green);
+    transition: width 0.05s linear, background 0.3s;
+    width: 0%;
+  }
+
+  /* ROULETTE */
+  .roulette-wheel {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 1.5rem;
+  }
+
+  .wheel-display {
+    width: 140px;
+    height: 140px;
+    border-radius: 50%;
+    background: conic-gradient(
+      #2d2d2d 0deg, #2d2d2d 9.72deg,
+      #c00 9.72deg, #c00 19.44deg,
+      #2d2d2d 19.44deg, #2d2d2d 29.16deg,
+      #c00 29.16deg, #c00 38.88deg,
+      #2d2d2d 38.88deg, #2d2d2d 48.6deg,
+      #c00 48.6deg, #c00 58.32deg,
+      #2d2d2d 58.32deg, #2d2d2d 68.04deg,
+      #c00 68.04deg, #c00 77.76deg,
+      #2d2d2d 77.76deg, #2d2d2d 87.48deg,
+      #c00 87.48deg, #c00 97.2deg,
+      #2d2d2d 97.2deg, #2d2d2d 106.92deg,
+      #c00 106.92deg, #c00 116.64deg,
+      #2d2d2d 116.64deg, #2d2d2d 126.36deg,
+      #c00 126.36deg, #c00 136.08deg,
+      #2d2d2d 136.08deg, #2d2d2d 145.8deg,
+      #c00 145.8deg, #c00 155.52deg,
+      #2d2d2d 155.52deg, #2d2d2d 165.24deg,
+      #c00 165.24deg, #c00 174.96deg,
+      #2d2d2d 174.96deg, #2d2d2d 184.68deg,
+      #c00 184.68deg, #c00 194.4deg,
+      #2d2d2d 194.4deg, #2d2d2d 204.12deg,
+      #c00 204.12deg, #c00 213.84deg,
+      #2d2d2d 213.84deg, #2d2d2d 223.56deg,
+      #c00 223.56deg, #c00 233.28deg,
+      #2d2d2d 233.28deg, #2d2d2d 243deg,
+      #c00 243deg, #c00 252.72deg,
+      #2d2d2d 252.72deg, #2d2d2d 262.44deg,
+      #c00 262.44deg, #c00 272.16deg,
+      #2d2d2d 272.16deg, #2d2d2d 281.88deg,
+      #c00 281.88deg, #c00 291.6deg,
+      #2d2d2d 291.6deg, #2d2d2d 301.32deg,
+      #c00 301.32deg, #c00 311.04deg,
+      #2d2d2d 311.04deg, #2d2d2d 320.76deg,
+      #c00 320.76deg, #c00 330.48deg,
+      #2d2d2d 330.48deg, #2d2d2d 340.2deg,
+      #008000 340.2deg, #008000 360deg
+    );
+    border: 4px solid var(--gold);
+    box-shadow: 0 0 30px rgba(212,175,55,0.3);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 2rem;
+    font-weight: 900;
+    color: white;
+    text-shadow: 0 2px 4px rgba(0,0,0,0.8);
+    transition: transform 1.5s cubic-bezier(0.17, 0.67, 0.12, 0.99);
+  }
+
+  .roulette-bets {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 0.5rem;
+    margin-bottom: 1rem;
+  }
+
+  .bet-option {
+    padding: 0.6rem;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    text-align: center;
+    cursor: pointer;
+    font-weight: 600;
+    font-size: 0.85rem;
+    letter-spacing: 0.5px;
+    transition: all 0.2s;
+    background: var(--bg);
+  }
+
+  .bet-option.red-bet { border-color: rgba(255,68,68,0.4); color: var(--red); }
+  .bet-option.black-bet { border-color: rgba(255,255,255,0.2); }
+  .bet-option.green-bet { border-color: rgba(0,217,126,0.4); color: var(--green); }
+  .bet-option:hover, .bet-option.selected { background: rgba(212,175,55,0.1); border-color: var(--gold); color: var(--gold); }
+
+  /* CONTROLS */
+  .bet-controls {
+    display: flex;
+    gap: 0.75rem;
+    margin-bottom: 1rem;
+    align-items: center;
+  }
+
+  .bet-input-wrap {
+    flex: 1;
+    position: relative;
+  }
+
+  .bet-input {
+    width: 100%;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    color: var(--text);
+    font-family: 'Rajdhani', sans-serif;
+    font-size: 1.1rem;
+    font-weight: 700;
+    padding: 0.6rem 1rem 0.6rem 2rem;
+    border-radius: 8px;
+    outline: none;
+    transition: border-color 0.2s;
+  }
+
+  .bet-input:focus { border-color: var(--gold); }
+
+  .bet-input-wrap::before {
+    content: '$';
+    position: absolute;
+    left: 0.75rem;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--gold);
+    font-weight: 700;
+  }
+
+  .quick-bets {
+    display: flex;
+    gap: 0.4rem;
+  }
+
+  .quick-bet {
+    background: var(--bg3);
+    border: 1px solid var(--border);
+    color: var(--text-dim);
+    font-family: 'Rajdhani', sans-serif;
+    font-size: 0.8rem;
+    font-weight: 600;
+    padding: 0.4rem 0.7rem;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+
+  .quick-bet:hover { border-color: var(--gold); color: var(--gold); }
+
+  .btn-spin {
+    width: 100%;
+    background: linear-gradient(135deg, #1a3a1a, var(--green));
+    color: #000;
+    border: none;
+    font-family: 'Rajdhani', sans-serif;
+    font-size: 1.1rem;
+    font-weight: 700;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    padding: 0.8rem;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.2s;
+    box-shadow: 0 4px 20px rgba(0,217,126,0.2);
+  }
+
+  .btn-spin:hover:not(:disabled) {
+    box-shadow: 0 6px 30px rgba(0,217,126,0.4);
+    transform: translateY(-1px);
+  }
+
+  .btn-spin:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+
+  .btn-danger {
+    background: linear-gradient(135deg, #3a1a1a, var(--red));
+    box-shadow: 0 4px 20px rgba(255,68,68,0.2);
+  }
+
+  .btn-danger:hover:not(:disabled) {
+    box-shadow: 0 6px 30px rgba(255,68,68,0.4);
+  }
+
+  /* SPORT BETTING */
+  .sports-list { display: flex; flex-direction: column; gap: 0.75rem; }
+
+  .sport-match {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 1rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    transition: border-color 0.2s;
+  }
+
+  .sport-match:hover { border-color: rgba(212,175,55,0.4); }
+
+  .match-teams {
+    flex: 1;
+  }
+
+  .match-teams .teams {
+    font-size: 1rem;
+    font-weight: 700;
+    margin-bottom: 0.25rem;
+  }
+
+  .match-teams .league {
+    font-size: 0.75rem;
+    color: var(--text-dim);
+    letter-spacing: 1px;
+    text-transform: uppercase;
+  }
+
+  .match-odds {
+    display: flex;
+    gap: 0.4rem;
+  }
+
+  .odd-btn {
+    background: var(--card);
+    border: 1px solid var(--border);
+    color: var(--text);
+    font-family: 'Rajdhani', sans-serif;
+    font-size: 0.85rem;
+    font-weight: 700;
+    padding: 0.4rem 0.7rem;
+    border-radius: 6px;
+    cursor: pointer;
+    text-align: center;
+    transition: all 0.15s;
+    min-width: 55px;
+  }
+
+  .odd-btn .odd-label { display: block; font-size: 0.7rem; color: var(--text-dim); font-weight: 400; }
+  .odd-btn .odd-value { color: var(--gold); }
+  .odd-btn:hover, .odd-btn.selected { background: rgba(212,175,55,0.1); border-color: var(--gold); }
+
+  /* SIDEBAR — BEHAVIOR DASHBOARD */
+  .layout { display: grid; grid-template-columns: 1fr 320px; gap: 1.5rem; }
+
+  .sidebar { display: flex; flex-direction: column; gap: 1rem; }
+
+  .sidebar-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    overflow: hidden;
+  }
+
+  .sidebar-card-header {
+    background: var(--card2);
+    padding: 0.75rem 1rem;
+    font-size: 0.75rem;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--text-dim);
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  .sidebar-card-body { padding: 1rem; }
+
+  /* RISK METER */
+  .risk-meter {
+    text-align: center;
+    padding: 1rem;
+  }
+
+  .risk-circle {
+    width: 100px;
+    height: 100px;
+    border-radius: 50%;
+    margin: 0 auto 0.75rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    border: 3px solid;
+    position: relative;
+    transition: all 0.5s;
+  }
+
+  .risk-score-val {
+    font-family: 'Playfair Display', serif;
+    font-size: 2rem;
+    font-weight: 900;
+    line-height: 1;
+  }
+
+  .risk-label-small {
+    font-size: 0.65rem;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    color: var(--text-dim);
+  }
+
+  .risk-level {
+    font-size: 0.9rem;
+    font-weight: 700;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+  }
+
+  .stat-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.4rem 0;
+    border-bottom: 1px solid rgba(255,255,255,0.04);
+    font-size: 0.85rem;
+  }
+
+  .stat-row:last-child { border-bottom: none; }
+  .stat-row .stat-label { color: var(--text-dim); }
+  .stat-row .stat-val { font-weight: 700; }
+  .stat-row .stat-val.warn { color: #ff9900; }
+  .stat-row .stat-val.danger { color: var(--red); }
+  .stat-row .stat-val.good { color: var(--green); }
+
+  /* TRANSACTION LOG */
+  .tx-list { display: flex; flex-direction: column; gap: 0.4rem; max-height: 200px; overflow-y: auto; }
+
+  .tx-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 0.8rem;
+    padding: 0.3rem 0;
+    border-bottom: 1px solid rgba(255,255,255,0.04);
+  }
+
+  .tx-item .tx-type { color: var(--text-dim); }
+  .tx-item .tx-amount.win { color: var(--green); }
+  .tx-item .tx-amount.loss { color: var(--red); }
+  .tx-item .tx-amount.deposit { color: var(--gold); }
+
+  /* DEPOSIT MODAL */
+  .modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.8);
+    backdrop-filter: blur(8px);
+    z-index: 1000;
+    display: none;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .modal-overlay.show { display: flex; }
+
+  .modal {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 2rem;
+    width: 400px;
+    max-width: 90vw;
+  }
+
+  .modal h2 {
+    font-family: 'Playfair Display', serif;
+    color: var(--gold);
+    margin-bottom: 1.5rem;
+    font-size: 1.5rem;
+  }
+
+  .deposit-amounts {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 0.5rem;
+    margin-bottom: 1.5rem;
+  }
+
+  .deposit-option {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    color: var(--text);
+    font-family: 'Rajdhani', sans-serif;
+    font-size: 1rem;
+    font-weight: 700;
+    padding: 0.75rem;
+    border-radius: 8px;
+    cursor: pointer;
+    text-align: center;
+    transition: all 0.15s;
+  }
+
+  .deposit-option:hover { border-color: var(--gold); color: var(--gold); background: rgba(212,175,55,0.05); }
+
+  .modal-actions { display: flex; gap: 0.75rem; }
+
+  .btn-cancel {
+    flex: 1;
+    background: var(--bg3);
+    border: 1px solid var(--border);
+    color: var(--text-dim);
+    font-family: 'Rajdhani', sans-serif;
+    font-weight: 700;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    padding: 0.7rem;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+
+  .btn-confirm {
+    flex: 2;
+    background: linear-gradient(135deg, var(--gold-dark), var(--gold));
+    color: #000;
+    border: none;
+    font-family: 'Rajdhani', sans-serif;
+    font-weight: 700;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    padding: 0.7rem;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+
+  /* NOTIFICATION */
+  .notification {
+    position: fixed;
+    top: 80px;
+    right: 2rem;
+    z-index: 500;
+    padding: 1rem 1.5rem;
+    border-radius: 10px;
+    font-weight: 700;
+    font-size: 1rem;
+    letter-spacing: 0.5px;
+    transform: translateX(150%);
+    transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+    max-width: 300px;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+  }
+
+  .notification.show { transform: translateX(0); }
+  .notification.win { background: #0d2d1a; border: 1px solid var(--green); color: var(--green); }
+  .notification.loss { background: #2d0d0d; border: 1px solid var(--red); color: var(--red); }
+  .notification.info { background: #1a1a0d; border: 1px solid var(--gold); color: var(--gold); }
+  .notification.alert { background: #2d1a0d; border: 1px solid #ff9900; color: #ff9900; }
+
+  /* GAME SELECTOR TABS */
+  .game-tabs {
+    display: flex;
+    gap: 0.5rem;
+    margin-bottom: 1.5rem;
+    background: var(--card);
+    padding: 0.4rem;
+    border-radius: 10px;
+    border: 1px solid var(--border);
+    width: fit-content;
+  }
+
+  .game-tab {
+    background: none;
+    border: none;
+    color: var(--text-dim);
+    font-family: 'Rajdhani', sans-serif;
+    font-size: 0.9rem;
+    font-weight: 600;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    padding: 0.5rem 1.2rem;
+    border-radius: 7px;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+
+  .game-tab.active {
+    background: linear-gradient(135deg, rgba(212,175,55,0.15), rgba(212,175,55,0.05));
+    color: var(--gold);
+    border: 1px solid var(--border);
+  }
+
+  .result-number {
+    font-size: 1.5rem;
+    font-weight: 900;
+    padding: 0.75rem 1.5rem;
+    border-radius: 8px;
+    margin: 0 auto 1rem;
+    width: fit-content;
+  }
+
+  .result-number.red-num { background: rgba(192,0,0,0.2); color: #ff6666; border: 1px solid rgba(192,0,0,0.4); }
+  .result-number.black-num { background: rgba(255,255,255,0.05); color: var(--text); border: 1px solid var(--border); }
+  .result-number.green-num { background: rgba(0,128,0,0.2); color: var(--green); border: 1px solid rgba(0,128,0,0.4); }
+
+  /* LIVE TICKER */
+  .live-ticker {
+    background: var(--bg);
+    border-bottom: 1px solid var(--border);
+    padding: 0.5rem 0;
+    overflow: hidden;
+    margin-bottom: 1.5rem;
+    border-radius: 8px;
+  }
+
+  .ticker-inner {
+    display: flex;
+    gap: 2rem;
+    animation: ticker 20s linear infinite;
+    white-space: nowrap;
+    width: fit-content;
+  }
+
+  @keyframes ticker {
+    0% { transform: translateX(0); }
+    100% { transform: translateX(-50%); }
+  }
+
+  .ticker-item {
+    font-size: 0.8rem;
+    color: var(--text-dim);
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0 1rem;
+  }
+
+  .ticker-item .win-amount { color: var(--green); font-weight: 700; }
+  .ticker-item .user { color: var(--gold); }
+
+  /* SCROLLBAR */
+  ::-webkit-scrollbar { width: 4px; }
+  ::-webkit-scrollbar-track { background: var(--bg); }
+  ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .fade-in { animation: fadeIn 0.4s ease forwards; }
+
+  .divider { height: 1px; background: var(--border); margin: 0.75rem 0; }
+
+  .alert-banner {
+    display: none;
+    background: linear-gradient(135deg, rgba(255,100,0,0.1), rgba(255,50,0,0.1));
+    border: 1px solid rgba(255,100,0,0.4);
+    border-radius: 10px;
+    padding: 1rem;
+    margin-bottom: 1rem;
+    font-size: 0.9rem;
+    color: #ff9944;
+    align-items: center;
+    gap: 0.75rem;
+  }
+
+  .alert-banner.show { display: flex; }
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<header>
+  <div class="header-inner">
+    <div class="logo">Easy Money<span>.Bet</span></div>
+    <nav>
+      <button class="active" onclick="switchNav(this,'slots')">🎰 Слоты</button>
+      <button onclick="switchNav(this,'roulette')">🎡 Рулетка</button>
+      <button onclick="switchNav(this,'crash')">📈 Краш</button>
+      <button onclick="switchNav(this,'sports')">⚽ Спорт</button>
+    </nav>
+    <div class="header-right">
+      <div class="balance-display">
+        <div>
+          <div class="label">БАЛАНС</div>
+          <div class="amount" id="balance-display">$500.00</div>
+        </div>
+      </div>
+      <button class="btn-deposit" onclick="openDeposit()">+ Пополнить</button>
+    </div>
+  </div>
+</header>
+
+<!-- LIVE TICKER -->
+<div class="live-ticker">
+  <div class="ticker-inner" id="ticker"></div>
+</div>
+
+<!-- NOTIFICATION -->
+<div class="notification" id="notification"></div>
+
+<!-- DEPOSIT MODAL -->
+<div class="modal-overlay" id="depositModal">
+  <div class="modal fade-in">
+    <h2>💳 Пополнение счёта</h2>
+    <div class="deposit-amounts">
+      <button class="deposit-option" onclick="selectDeposit(50)">$50</button>
+      <button class="deposit-option" onclick="selectDeposit(100)">$100</button>
+      <button class="deposit-option" onclick="selectDeposit(200)">$200</button>
+      <button class="deposit-option" onclick="selectDeposit(500)">$500</button>
+      <button class="deposit-option" onclick="selectDeposit(1000)">$1,000</button>
+      <button class="deposit-option" onclick="selectDeposit(2000)">$2,000</button>
+    </div>
+    <div style="margin-bottom:1rem;">
+      <input class="bet-input" id="depositInput" type="number" placeholder="Своя сумма..." style="width:100%;padding-left:1rem;">
+    </div>
+    <div class="modal-actions">
+      <button class="btn-cancel" onclick="closeDeposit()">Отмена</button>
+      <button class="btn-confirm" onclick="confirmDeposit()">Пополнить</button>
+    </div>
+  </div>
+</div>
+
+<!-- MAIN -->
+<main>
+  <!-- HERO -->
+  <div class="hero" style="margin-bottom:1.5rem;">
+    <div class="hero-text">
+      <h1>Добро пожаловать в<br><span class="highlight">Easy Money.Bet</span></h1>
+      <p>Лучшие игры • Быстрые выплаты • 24/7</p>
+    </div>
+    <div class="hero-bonus">
+      <div class="bonus-amount">+100%</div>
+      <div class="bonus-label">Бонус на первый депозит</div>
+    </div>
+  </div>
+
+  <!-- ALERT BANNER (риск-предупреждение) -->
+  <div class="alert-banner" id="alertBanner">
+    ⚠️ <span id="alertText">Вы играете уже долго. Рекомендуем сделать перерыв.</span>
+  </div>
+
+  <!-- LAYOUT -->
+  <div class="layout">
+    <!-- GAMES -->
+    <div>
+
+      <!-- SLOTS -->
+      <div class="game-panel active fade-in" id="panel-slots">
+        <div class="game-header">
+          <div class="game-title">🎰 Lucky Slots</div>
+          <div style="font-size:0.75rem;color:var(--text-dim);">RTP: 94%</div>
+        </div>
+        <div class="game-body">
+          <div class="slots-display">
+            <div class="reels">
+              <div class="reel" id="reel0">🍒</div>
+              <div class="reel" id="reel1">🍋</div>
+              <div class="reel" id="reel2">🍊</div>
+            </div>
+            <div class="win-message" id="slots-msg"></div>
+          </div>
+          <div class="bet-controls">
+            <div class="bet-input-wrap">
+              <input class="bet-input" id="slots-bet" type="number" value="10" min="1" max="500">
+            </div>
+            <div class="quick-bets">
+              <button class="quick-bet" onclick="setBet('slots-bet',5)">$5</button>
+              <button class="quick-bet" onclick="setBet('slots-bet',25)">$25</button>
+              <button class="quick-bet" onclick="setBet('slots-bet',50)">$50</button>
+              <button class="quick-bet" onclick="setBet('slots-bet',100)">$100</button>
+              <button class="quick-bet" onclick="halfBet('slots-bet')">½</button>
+              <button class="quick-bet" onclick="doubleBet('slots-bet')">2×</button>
+            </div>
+          </div>
+          <button class="btn-spin" id="btn-slots" onclick="playSlotsGame()">🎰 КРУТИТЬ</button>
+        </div>
+      </div>
+
+      <!-- ROULETTE -->
+      <div class="game-panel fade-in" id="panel-roulette">
+        <div class="game-header">
+          <div class="game-title">🎡 Европейская Рулетка</div>
+          <div style="font-size:0.75rem;color:var(--text-dim);">RTP: 97.3%</div>
+        </div>
+        <div class="game-body">
+          <div class="roulette-wheel">
+            <div>
+              <div class="wheel-display" id="roulette-wheel">?</div>
+              <div style="text-align:center;margin-top:0.5rem;font-size:0.8rem;color:var(--text-dim);">Последний номер</div>
+            </div>
+          </div>
+          <div class="roulette-bets">
+            <button class="bet-option red-bet" onclick="selectRoulette(this,'red')">🔴 Красное (2×)</button>
+            <button class="bet-option black-bet" onclick="selectRoulette(this,'black')">⚫ Чёрное (2×)</button>
+            <button class="bet-option green-bet" onclick="selectRoulette(this,'0')">🟢 Зеро (36×)</button>
+            <button class="bet-option" onclick="selectRoulette(this,'even')">Чётное (2×)</button>
+            <button class="bet-option" onclick="selectRoulette(this,'odd')">Нечётное (2×)</button>
+            <button class="bet-option" onclick="selectRoulette(this,'low')">1-18 (2×)</button>
+            <button class="bet-option" onclick="selectRoulette(this,'high')">19-36 (2×)</button>
+            <button class="bet-option" onclick="selectRoulette(this,'dozen1')">1-12 (3×)</button>
+            <button class="bet-option" onclick="selectRoulette(this,'dozen2')">13-24 (3×)</button>
+          </div>
+          <div id="roulette-result" style="text-align:center;"></div>
+          <div class="bet-controls">
+            <div class="bet-input-wrap">
+              <input class="bet-input" id="roulette-bet" type="number" value="10" min="1" max="500">
+            </div>
+            <div class="quick-bets">
+              <button class="quick-bet" onclick="setBet('roulette-bet',5)">$5</button>
+              <button class="quick-bet" onclick="setBet('roulette-bet',25)">$25</button>
+              <button class="quick-bet" onclick="setBet('roulette-bet',100)">$100</button>
+              <button class="quick-bet" onclick="doubleBet('roulette-bet')">2×</button>
+            </div>
+          </div>
+          <button class="btn-spin" id="btn-roulette" onclick="playRouletteGame()">🎡 СТАВИТЬ</button>
+        </div>
+      </div>
+
+      <!-- CRASH -->
+      <div class="game-panel fade-in" id="panel-crash">
+        <div class="game-header">
+          <div class="game-title">📈 Crash</div>
+          <div style="font-size:0.75rem;color:var(--text-dim);">Успей вывести до краша!</div>
+        </div>
+        <div class="game-body">
+          <div class="crash-display">
+            <div class="crash-multiplier" id="crash-mult">1.00×</div>
+            <div class="crash-label" id="crash-status">Ставьте и жмите СТАРТ</div>
+            <div class="crash-bar" id="crash-bar"></div>
+          </div>
+          <div class="bet-controls">
+            <div class="bet-input-wrap">
+              <input class="bet-input" id="crash-bet" type="number" value="10" min="1" max="500">
+            </div>
+            <div class="quick-bets">
+              <button class="quick-bet" onclick="setBet('crash-bet',5)">$5</button>
+              <button class="quick-bet" onclick="setBet('crash-bet',25)">$25</button>
+              <button class="quick-bet" onclick="setBet('crash-bet',50)">$50</button>
+              <button class="quick-bet" onclick="doubleBet('crash-bet')">2×</button>
+            </div>
+          </div>
+          <div style="display:flex;gap:0.75rem;">
+            <button class="btn-spin" id="btn-crash-start" onclick="startCrashGame()" style="flex:1;">🚀 СТАРТ</button>
+            <button class="btn-spin btn-danger" id="btn-crash-out" onclick="cashoutCrash()" style="flex:1;" disabled>💰 ВЫВЕСТИ</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- SPORTS -->
+      <div class="game-panel fade-in" id="panel-sports">
+        <div class="game-header">
+          <div class="game-title">⚽ Линия ставок</div>
+          <div style="font-size:0.75rem;color:var(--text-dim);">Live & Pre-match</div>
+        </div>
+        <div class="game-body">
+          <div class="sports-list" id="sports-list"></div>
+          <div class="divider"></div>
+          <div id="selected-bet-info" style="display:none;margin-bottom:1rem;">
+            <div style="font-size:0.85rem;color:var(--text-dim);margin-bottom:0.5rem;">Выбранная ставка:</div>
+            <div id="selected-bet-text" style="font-weight:700;color:var(--gold);margin-bottom:0.75rem;"></div>
+            <div class="bet-controls">
+              <div class="bet-input-wrap">
+                <input class="bet-input" id="sports-bet" type="number" value="10" min="1" max="1000">
+              </div>
+              <div class="quick-bets">
+                <button class="quick-bet" onclick="setBet('sports-bet',25)">$25</button>
+                <button class="quick-bet" onclick="setBet('sports-bet',50)">$50</button>
+                <button class="quick-bet" onclick="doubleBet('sports-bet')">2×</button>
+              </div>
+            </div>
+            <button class="btn-spin" onclick="placeSportsBet()">⚽ ПОСТАВИТЬ</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SIDEBAR -->
+    <div class="sidebar">
+
+      <!-- RISK METER -->
+      <div class="sidebar-card">
+        <div class="sidebar-card-header">🧠 AI Анализ поведения</div>
+        <div class="sidebar-card-body">
+          <div class="risk-meter">
+            <div class="risk-circle" id="risk-circle" style="border-color:var(--green);color:var(--green);">
+              <div class="risk-score-val" id="risk-score-val">0</div>
+              <div class="risk-label-small">риск</div>
+            </div>
+            <div class="risk-level" id="risk-level" style="color:var(--green);">🟢 НИЗКИЙ</div>
+          </div>
+
+          <div style="text-align:center;margin:0.4rem 0 0.75rem;">
+            <div id="model-status" style="font-size:0.7rem;letter-spacing:1px;padding:0.3rem 0.75rem;border-radius:20px;display:inline-block;background:rgba(255,255,255,0.05);color:var(--text-dim);">
+              ⏳ Загрузка модели...
+            </div>
+          </div>
+
+          <div style="display:flex;gap:0.5rem;margin-bottom:0.75rem;">
+            <div style="flex:1;background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:0.5rem;text-align:center;">
+              <div style="font-size:0.6rem;color:var(--text-dim);letter-spacing:1px;text-transform:uppercase;">ML</div>
+              <div id="ml-score" style="font-size:1.3rem;font-weight:700;color:var(--blue);">—</div>
+            </div>
+            <div style="flex:1;background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:0.5rem;text-align:center;">
+              <div style="font-size:0.6rem;color:var(--text-dim);letter-spacing:1px;text-transform:uppercase;">Rules</div>
+              <div id="rule-score" style="font-size:1.3rem;font-weight:700;color:var(--gold);">—</div>
+            </div>
+            <div style="flex:1;background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:0.5rem;text-align:center;">
+              <div style="font-size:0.6rem;color:var(--text-dim);letter-spacing:1px;text-transform:uppercase;">Final</div>
+              <div id="final-score" style="font-size:1.3rem;font-weight:700;color:var(--red);">—</div>
+            </div>
+          </div>
+          <div class="divider"></div>
+
+          <!-- CURRENT SESSION -->
+          <div style="font-size:0.7rem;color:var(--text-dim);letter-spacing:1px;text-transform:uppercase;margin-bottom:0.5rem;">📍 Текущая сессия</div>
+          <div class="stat-row"><span class="stat-label">Время</span><span class="stat-val" id="stat-session">0 мин</span></div>
+          <div class="stat-row"><span class="stat-label">Ставок</span><span class="stat-val" id="stat-bets">0</span></div>
+          <div class="stat-row"><span class="stat-label">Депозиты</span><span class="stat-val" id="stat-deposits">0</span></div>
+          <div class="stat-row"><span class="stat-label">Счёт опустошён</span><span class="stat-val" id="stat-depleted">0</span></div>
+          <div class="stat-row"><span class="stat-label">Погоня</span><span class="stat-val" id="stat-chasing">0</span></div>
+          <div class="stat-row"><span class="stat-label">Мартингейл</span><span class="stat-val" id="stat-martingale">0</span></div>
+          <div class="stat-row"><span class="stat-label">Эскалация ставок</span><span class="stat-val" id="stat-escalation">—</span></div>
+          <div class="stat-row"><span class="stat-label">Ставка/баланс</span><span class="stat-val" id="stat-ratio">—</span></div>
+          <div class="stat-row"><span class="stat-label">Серии потерь 5+</span><span class="stat-val" id="stat-lossstreak">0</span></div>
+          <div class="stat-row"><span class="stat-label">Быстрые серии</span><span class="stat-val" id="stat-rapid">0</span></div>
+
+          <div class="divider"></div>
+
+          <!-- CROSS SESSION -->
+          <div style="font-size:0.7rem;color:var(--text-dim);letter-spacing:1px;text-transform:uppercase;margin-bottom:0.5rem;">🗂️ История (localStorage)</div>
+          <div class="stat-row"><span class="stat-label">Сессий всего</span><span class="stat-val" id="cs-total">0</span></div>
+          <div class="stat-row"><span class="stat-label">Дней за 7 дней</span><span class="stat-val" id="cs-days7">0</span></div>
+          <div class="stat-row"><span class="stat-label">Дней подряд</span><span class="stat-val" id="cs-streak">0</span></div>
+          <div class="stat-row"><span class="stat-label">Высоких рисков</span><span class="stat-val" id="cs-highrisk">0</span></div>
+          <div class="stat-row"><span class="stat-label">Потери растут</span><span class="stat-val" id="cs-lossgrowth">—</span></div>
+
+          <div class="divider"></div>
+
+          <!-- FEATURE BARS -->
+          <div style="font-size:0.7rem;color:var(--text-dim);letter-spacing:1px;text-transform:uppercase;margin-bottom:0.5rem;">📊 Feature Vector (14)</div>
+          <div id="feature-bars"></div>
+
+          <button onclick="window.tracker.clearHistory()" style="margin-top:0.75rem;width:100%;background:none;border:1px solid rgba(255,68,68,0.3);color:rgba(255,68,68,0.7);font-family:'Rajdhani',sans-serif;font-size:0.75rem;font-weight:600;letter-spacing:1px;padding:0.4rem;border-radius:6px;cursor:pointer;">
+            🗑️ Очистить историю
+          </button>
+        </div>
+      </div>
+
+      <!-- SESSION STATS -->
+      <div class="sidebar-card">
+        <div class="sidebar-card-header">📊 Статистика сессии</div>
+        <div class="sidebar-card-body">
+          <div class="stat-row">
+            <span class="stat-label">Начальный баланс</span>
+            <span class="stat-val">$500.00</span>
+          </div>
+          <div class="stat-row">
+            <span class="stat-label">Всего выиграно</span>
+            <span class="stat-val good" id="stat-won">$0.00</span>
+          </div>
+          <div class="stat-row">
+            <span class="stat-label">Всего проиграно</span>
+            <span class="stat-val danger" id="stat-lost">$0.00</span>
+          </div>
+          <div class="stat-row">
+            <span class="stat-label">Итог</span>
+            <span class="stat-val" id="stat-net">$0.00</span>
+          </div>
+          <div class="stat-row">
+            <span class="stat-label">Ср. ставка</span>
+            <span class="stat-val" id="stat-avg-bet">—</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- TRANSACTION LOG -->
+      <div class="sidebar-card">
+        <div class="sidebar-card-header">📋 История транзакций</div>
+        <div class="sidebar-card-body" style="padding:0.75rem;">
+          <div class="tx-list" id="tx-list">
+            <div style="color:var(--text-dim);font-size:0.8rem;text-align:center;padding:1rem;">Пока нет транзакций</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- EXPORT -->
+      <button class="btn-spin" onclick="exportData()" style="font-size:0.85rem;">
+        📥 Экспорт данных (JSON)
+      </button>
+    </div>
+  </div>
+</main>
+
+<script src="tracker/behavior.js"></script>
+<script src="games/logic.js"></script>
+<script>
+// ========================================
+// STATE
+// ========================================
+let balance = 500;
+let slots = null;
+let roulette = null;
+let crash = null;
+let selectedRouletteBet = 'red';
+let selectedSportsBet = null;
+let depositAmount = 0;
+let transactions = [];
+let currentPanel = 'slots';
+
+// ========================================
+// INIT
+// ========================================
+window.addEventListener('load', () => {
+  slots = new SlotsGame(window.tracker);
+  roulette = new RouletteGame(window.tracker);
+  crash = new CrashGame(window.tracker);
+  updateBalanceDisplay();
+  renderSports();
+  renderTicker();
+});
+
+window.addEventListener('behaviorUpdate', (e) => {
+  const data = e.detail;
+  updateBehaviorDashboard(data);
+  checkAlerts(data);
+});
+
+window.addEventListener('modelStatus', (e) => {
+  const el = document.getElementById('model-status');
+  if (!el) return;
+  const src = window.tracker?.metrics?.modelSource;
+  if (src === 'tfjs') {
+    el.style.background = 'rgba(68,136,255,0.15)';
+    el.style.color = 'var(--blue)';
+    el.textContent = '🤖 TF.js Neural Network';
+  } else if (src === 'backend') {
+    el.style.background = 'rgba(0,217,126,0.15)';
+    el.style.color = 'var(--green)';
+    el.textContent = '⚡ Python RF Backend';
+  } else {
+    el.style.color = 'var(--text-dim)';
+    el.textContent = '📐 Rule-based';
+  }
+});
+
+// ========================================
+// NAV
+// ========================================
+function switchNav(btn, panel) {
+  document.querySelectorAll('nav button').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  document.querySelectorAll('.game-panel').forEach(p => p.classList.remove('active'));
+  document.getElementById('panel-' + panel).classList.add('active');
+  currentPanel = panel;
+
+  if (panel !== currentPanel && window.tracker) {
+    window.tracker.metrics.switchedGameCount++;
+  }
+}
+
+// ========================================
+// BALANCE
+// ========================================
+function updateBalanceDisplay() {
+  document.getElementById('balance-display').textContent = '$' + balance.toFixed(2);
+}
+
+function checkBalance(amount) {
+  if (amount <= 0) { showNotification('❌ Введите корректную сумму', 'loss'); return false; }
+  if (amount > balance) { showNotification('❌ Недостаточно средств!', 'loss'); openDeposit(); return false; }
+  return true;
+}
+
+// ========================================
+// SLOTS
+// ========================================
+async function playSlotsGame() {
+  const betAmount = parseFloat(document.getElementById('slots-bet').value);
+  if (!checkBalance(betAmount)) return;
+
+  const btn = document.getElementById('btn-slots');
+  btn.disabled = true;
+
+  // Pass balance to tracker
+  window.tracker.logBet(betAmount, 'slots', balance);
+
+  const reels = ['reel0', 'reel1', 'reel2'];
+  reels.forEach(id => document.getElementById(id).classList.add('spinning'));
+  document.getElementById('slots-msg').textContent = '';
+
+  await sleep(800);
+
+  // Override slots.spin to not double-log
+  const result = (() => {
+    slots.spinning = false;
+    const reelResult = slots.generateReels();
+    const winMultiplier = slots.checkWin(reelResult);
+    const winAmount = winMultiplier > 0 ? betAmount * winMultiplier : 0;
+    const newBalance = balance - betAmount + winAmount;
+    window.tracker.logResult(winAmount > 0, winAmount > 0 ? winAmount : betAmount, newBalance);
+    return { reels: reelResult, winAmount, winMultiplier, newBalance, won: winAmount > 0 };
+  })();
+
+  balance = parseFloat(result.newBalance.toFixed(2));
+  updateBalanceDisplay();
+
+  for (let i = 0; i < 3; i++) {
+    await sleep(200);
+    const el = document.getElementById('reel' + i);
+    el.classList.remove('spinning');
+    el.textContent = result.reels[i];
+    if (result.won) el.classList.add('win');
+    else el.classList.remove('win');
+  }
+
+  await sleep(200);
+
+  if (result.won) {
+    document.getElementById('slots-msg').textContent = `🎉 +$${result.winAmount.toFixed(2)} (${result.winMultiplier}×)`;
+    showNotification(`🎉 ВЫИГРЫШ $${result.winAmount.toFixed(2)}!`, 'win');
+    addTransaction('win', result.winAmount, 'Слоты');
+  } else {
+    document.getElementById('slots-msg').textContent = 'Не повезло, попробуй снова!';
+    showNotification(`😔 -$${betAmount.toFixed(2)}`, 'loss');
+    addTransaction('loss', betAmount, 'Слоты');
+  }
+
+  btn.disabled = false;
+}
+
+// ========================================
+// ROULETTE
+// ========================================
+function selectRoulette(el, bet) {
+  document.querySelectorAll('.bet-option').forEach(b => b.classList.remove('selected'));
+  el.classList.add('selected');
+  selectedRouletteBet = bet;
+}
+
+async function playRouletteGame() {
+  const betAmount = parseFloat(document.getElementById('roulette-bet').value);
+  if (!checkBalance(betAmount)) return;
+  if (!selectedRouletteBet) { showNotification('Выберите тип ставки', 'info'); return; }
+
+  const btn = document.getElementById('btn-roulette');
+  btn.disabled = true;
+
+  window.tracker.logBet(betAmount, 'roulette', balance);
+
+  const wheel = document.getElementById('roulette-wheel');
+  const spins = 3 + Math.random() * 5;
+  wheel.style.transform = `rotate(${spins * 360}deg)`;
+
+  await sleep(1600);
+
+  const number = Math.floor(Math.random() * 37);
+  const result = roulette.evaluateBet(selectedRouletteBet, number, betAmount);
+  const newBalance = balance - betAmount + result.winAmount;
+  balance = parseFloat(newBalance.toFixed(2));
+  window.tracker.logResult(result.won, result.won ? result.winAmount : betAmount, balance);
+  updateBalanceDisplay();
+
+  const color = roulette.getNumberColor(number);
+  const colorMap = { red: '#ff4444', black: '#ffffff', green: '#00d97e' };
+  wheel.textContent = number;
+  wheel.style.color = colorMap[color];
+
+  document.getElementById('roulette-result').innerHTML =
+    `<div class="result-number ${color}-num">${number} ${color === 'red' ? '🔴' : color === 'green' ? '🟢' : '⚫'}</div>`;
+
+  if (result.won) {
+    showNotification(`🎉 +$${result.winAmount.toFixed(2)} (${result.multiplier}×)`, 'win');
+    addTransaction('win', result.winAmount, 'Рулетка');
+  } else {
+    showNotification(`😔 -$${betAmount.toFixed(2)}`, 'loss');
+    addTransaction('loss', betAmount, 'Рулетка');
+  }
+
+  wheel.style.transform = '';
+  btn.disabled = false;
+}
+
+// ========================================
+// CRASH
+// ========================================
+let crashBetAmount = 0;
+
+function startCrashGame() {
+  crashBetAmount = parseFloat(document.getElementById('crash-bet').value);
+  if (!checkBalance(crashBetAmount)) return;
+
+  balance -= crashBetAmount;
+  updateBalanceDisplay();
+
+  document.getElementById('btn-crash-start').disabled = true;
+  document.getElementById('btn-crash-out').disabled = false;
+
+  const mult = document.getElementById('crash-mult');
+  const status = document.getElementById('crash-status');
+  const bar = document.getElementById('crash-bar');
+
+  mult.className = 'crash-multiplier';
+  status.textContent = '🚀 Летим...';
+
+  window.tracker.logBet(crashBetAmount, 'crash', balance + crashBetAmount);
+
+  crash.start(
+    crashBetAmount, balance + crashBetAmount,
+    (m) => {
+      mult.textContent = m.toFixed(2) + '×';
+      bar.style.width = Math.min(100, (m - 1) * 10) + '%';
+      if (m > 3) mult.classList.add('danger');
+    },
+    (crashAt, newBal) => {
+      mult.textContent = crashAt.toFixed(2) + '×';
+      mult.classList.add('danger');
+      status.textContent = '💥 КРАШ!';
+      bar.style.background = 'var(--red)';
+      balance = parseFloat(newBal.toFixed(2));
+      updateBalanceDisplay();
+      showNotification(`💥 Краш на ${crashAt}× — потеря $${crashBetAmount.toFixed(2)}`, 'loss');
+      addTransaction('loss', crashBetAmount, 'Краш');
+      document.getElementById('btn-crash-start').disabled = false;
+      document.getElementById('btn-crash-out').disabled = true;
+    }
+  );
+}
+
+function cashoutCrash() {
+  const result = crash.cashout(crashBetAmount, balance + crashBetAmount);
+  if (!result) return;
+  balance = parseFloat(result.newBalance.toFixed(2));
+  updateBalanceDisplay();
+  document.getElementById('crash-status').textContent = `✅ Выведено на ${result.multiplier}×`;
+  document.getElementById('btn-crash-start').disabled = false;
+  document.getElementById('btn-crash-out').disabled = true;
+  showNotification(`✅ +$${result.winAmount.toFixed(2)} на ${result.multiplier}×`, 'win');
+  addTransaction('win', result.winAmount, 'Краш');
+}
+
+// ========================================
+// SPORTS
+// ========================================
+const sportsData = [
+  { id: 1, league: 'АПЛ', teams: 'Манчестер Сити — Арсенал', odds: [1.75, 3.50, 4.20], live: true },
+  { id: 2, league: 'Лига Чемпионов', teams: 'Реал Мадрид — Барселона', odds: [2.10, 3.20, 3.40], live: true },
+  { id: 3, league: 'КПЛ', teams: 'Астана — Кайрат', odds: [2.40, 3.10, 2.80], live: false },
+  { id: 4, league: 'La Liga', teams: 'Атлетико — Вильяреал', odds: [1.90, 3.40, 3.90], live: false },
+  { id: 5, league: 'NBA', teams: 'Lakers — Warriors', odds: [1.85, 1.95, null], live: true },
+];
+
+function renderSports() {
+  const list = document.getElementById('sports-list');
+  list.innerHTML = sportsData.map(m => `
+    <div class="sport-match">
+      <div class="match-teams">
+        <div class="teams">${m.live ? '<span style="color:var(--red);font-size:0.7rem;letter-spacing:1px;">● LIVE</span> ' : ''}${m.teams}</div>
+        <div class="league">${m.league}</div>
+      </div>
+      <div class="match-odds">
+        <button class="odd-btn" onclick="selectSports(this, ${m.id}, 'П1', ${m.odds[0]})">
+          <span class="odd-label">П1</span>
+          <span class="odd-value">${m.odds[0]}</span>
+        </button>
+        <button class="odd-btn" onclick="selectSports(this, ${m.id}, 'X', ${m.odds[1]})">
+          <span class="odd-label">X</span>
+          <span class="odd-value">${m.odds[1]}</span>
+        </button>
+        ${m.odds[2] ? `<button class="odd-btn" onclick="selectSports(this, ${m.id}, 'П2', ${m.odds[2]})">
+          <span class="odd-label">П2</span>
+          <span class="odd-value">${m.odds[2]}</span>
+        </button>` : ''}
+      </div>
+    </div>
+  `).join('');
+}
+
+function selectSports(el, matchId, type, odd) {
+  document.querySelectorAll('.odd-btn').forEach(b => b.classList.remove('selected'));
+  el.classList.add('selected');
+  const match = sportsData.find(m => m.id === matchId);
+  selectedSportsBet = { match, type, odd };
+  document.getElementById('selected-bet-info').style.display = 'block';
+  document.getElementById('selected-bet-text').textContent = `${match.teams} — ${type} @ ${odd}`;
+}
+
+function placeSportsBet() {
+  if (!selectedSportsBet) return;
+  const betAmount = parseFloat(document.getElementById('sports-bet').value);
+  if (!checkBalance(betAmount)) return;
+
+  window.tracker.logBet(betAmount, 'sports', balance);
+
+  const won = Math.random() < (1 / selectedSportsBet.odd) * 0.92;
+  const winAmount = won ? betAmount * selectedSportsBet.odd : 0;
+  balance = parseFloat((balance - betAmount + winAmount).toFixed(2));
+
+  window.tracker.logResult(won, won ? winAmount : betAmount, balance);
+  updateBalanceDisplay();
+
+  if (won) {
+    showNotification(`⚽ ВЫИГРЫШ! +$${winAmount.toFixed(2)}`, 'win');
+    addTransaction('win', winAmount, 'Спорт');
+  } else {
+    showNotification(`😔 Проигрыш -$${betAmount.toFixed(2)}`, 'loss');
+    addTransaction('loss', betAmount, 'Спорт');
+  }
+}
+
+function closeDeposit() {
+  // Если открывал но не пополнил — логируем как failed attempt
+  if (!depositAmount || depositAmount === 0) {
+    window.tracker.logFailedDeposit();
+  }
+  document.getElementById('depositModal').classList.remove('show');
+  depositAmount = 0;
+}
+
+// ========================================
+// DEPOSIT
+// ========================================
+function openDeposit() {
+  document.getElementById('depositModal').classList.add('show');
+}
+
+function closeDeposit() {
+  document.getElementById('depositModal').classList.remove('show');
+  depositAmount = 0;
+}
+
+function selectDeposit(amount) {
+  depositAmount = amount;
+  document.getElementById('depositInput').value = amount;
+}
+
+function confirmDeposit() {
+  const amount = parseFloat(document.getElementById('depositInput').value) || depositAmount;
+  if (!amount || amount <= 0) { showNotification('Введите сумму', 'info'); return; }
+
+  balance += amount;
+  updateBalanceDisplay();
+  window.tracker.logDeposit(amount);
+  addTransaction('deposit', amount, 'Пополнение');
+  showNotification(`✅ Счёт пополнен на $${amount.toFixed(2)}`, 'info');
+  closeDeposit();
+}
+
+// ========================================
+// HELPERS
+// ========================================
+function setBet(id, val) { document.getElementById(id).value = val; }
+function halfBet(id) { document.getElementById(id).value = Math.max(1, parseFloat(document.getElementById(id).value) / 2).toFixed(0); }
+function doubleBet(id) { document.getElementById(id).value = Math.min(500, parseFloat(document.getElementById(id).value) * 2).toFixed(0); }
+
+function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
+
+// ========================================
+// NOTIFICATIONS
+// ========================================
+let notifTimer = null;
+function showNotification(msg, type) {
+  const el = document.getElementById('notification');
+  el.textContent = msg;
+  el.className = 'notification ' + type + ' show';
+  if (notifTimer) clearTimeout(notifTimer);
+  notifTimer = setTimeout(() => el.classList.remove('show'), 3000);
+}
+
+// ========================================
+// TRANSACTIONS
+// ========================================
+function addTransaction(type, amount, game) {
+  transactions.unshift({ type, amount, game, time: new Date().toLocaleTimeString() });
+  if (transactions.length > 50) transactions.pop();
+  renderTransactions();
+}
+
+function renderTransactions() {
+  const list = document.getElementById('tx-list');
+  list.innerHTML = transactions.slice(0, 15).map(tx => `
+    <div class="tx-item">
+      <span class="tx-type">${tx.time} · ${tx.game}</span>
+      <span class="tx-amount ${tx.type}">
+        ${tx.type === 'win' ? '+' : tx.type === 'deposit' ? '+' : '-'}$${tx.amount.toFixed(2)}
+      </span>
+    </div>
+  `).join('');
+}
+
+// ========================================
+// BEHAVIOR DASHBOARD UPDATE
+// ========================================
+function updateBehaviorDashboard(data) {
+  const risk = data.riskLevel;
+
+  // Risk circle
+  const circle = document.getElementById('risk-circle');
+  circle.style.borderColor = risk.color;
+  circle.style.color = risk.color;
+  document.getElementById('risk-score-val').textContent = data.riskScore;
+  document.getElementById('risk-level').textContent = `${risk.emoji} ${risk.level === 'HIGH' ? 'ВЫСОКИЙ' : risk.level === 'MEDIUM' ? 'СРЕДНИЙ' : 'НИЗКИЙ'}`;
+  document.getElementById('risk-level').style.color = risk.color;
+
+  document.getElementById('ml-score').textContent    = data.mlRiskScore ?? '—';
+  document.getElementById('rule-score').textContent  = data.ruleRiskScore ?? '—';
+  document.getElementById('final-score').textContent = data.riskScore ?? '—';
+
+  // Current session stats
+  document.getElementById('stat-session').textContent = data.sessionLengthMinutes + ' мин';
+  document.getElementById('stat-bets').textContent = data.totalBets;
+
+  const setColored = (id, val, warnAt, dangerAt) => {
+    const el = document.getElementById(id);
+    if (!el) return;
+    el.textContent = val;
+    el.className = 'stat-val' + (val >= dangerAt ? ' danger' : val >= warnAt ? ' warn' : '');
+  };
+
+  setColored('stat-deposits',   data.depositsPerSession,  2, 4);
+  setColored('stat-depleted',   data.accountDepleted,     1, 3);
+  setColored('stat-chasing',    data.chasingLossEvents,   2, 5);
+  setColored('stat-martingale', data.martingaleEvents,    2, 4);
+  setColored('stat-lossstreak', data.lossStreak5Plus,     1, 3);
+  setColored('stat-rapid',      data.rapidSeriesCount,    1, 3);
+
+  const escEl = document.getElementById('stat-escalation');
+  if (escEl) {
+    const esc = data.betEscalationRate;
+    escEl.textContent = esc > 0 ? '+' + (esc * 100).toFixed(0) + '%' : (esc * 100).toFixed(0) + '%';
+    escEl.className = 'stat-val' + (esc > 0.5 ? ' danger' : esc > 0.2 ? ' warn' : ' good');
+  }
+
+  const ratioEl = document.getElementById('stat-ratio');
+  if (ratioEl) {
+    const r = data.avgBetToBalanceRatio;
+    ratioEl.textContent = r > 0 ? (r * 100).toFixed(0) + '%' : '—';
+    ratioEl.className = 'stat-val' + (r > 0.3 ? ' danger' : r > 0.15 ? ' warn' : '');
+  }
+
+  // Cross-session
+  const cs = data.crossSession;
+  if (cs) {
+    document.getElementById('cs-total').textContent   = cs.totalSessions || 0;
+    setColored('cs-days7',    cs.daysPlayedLast7 || 0, 4, 6);
+    setColored('cs-streak',   cs.consecutiveDays || 0, 4, 7);
+    setColored('cs-highrisk', cs.sessionsWithHighRisk || 0, 2, 5);
+    const lgEl = document.getElementById('cs-lossgrowth');
+    if (lgEl) {
+      const lg = cs.lossGrowthRate || 0;
+      lgEl.textContent = lg > 0 ? '📈 Растут' : '📉 Стабильно';
+      lgEl.className = 'stat-val' + (lg > 10 ? ' danger' : lg > 3 ? ' warn' : ' good');
+    }
+  }
+
+  // Session stats
+  document.getElementById('stat-won').textContent  = '$' + data.totalWon.toFixed(2);
+  document.getElementById('stat-lost').textContent = '$' + data.totalLost.toFixed(2);
+  const net = data.netBalance;
+  const netEl = document.getElementById('stat-net');
+  netEl.textContent = (net >= 0 ? '+' : '') + '$' + net.toFixed(2);
+  netEl.className = 'stat-val' + (net >= 0 ? ' good' : ' danger');
+  document.getElementById('stat-avg-bet').textContent = data.avgBetAmount > 0 ? '$' + data.avgBetAmount : '—';
+
+  // Feature bars
+  renderFeatureBars(data.featureVector, data.featureNames);
+}
+
+const featureLabels = [
+  'Депозиты/сессия','Счёт опустошён','Chasing losses','Быстрые ставки',
+  'Длина сессии','Рост ставок','Ночная игра','Смена игр',
+  'Мартингейл','Реинвест','Эскалация','Ставка/баланс',
+  'Серии 5+ потерь','Дней подряд'
+];
+
+function renderFeatureBars(vec, names) {
+  if (!vec || !vec.length) return;
+  const labels = names || featureLabels;
+  const container = document.getElementById('feature-bars');
+  container.innerHTML = vec.map((val, i) => {
+    const pct = Math.round(val * 100);
+    const color = pct > 66 ? 'var(--red)' : pct > 33 ? '#ff9900' : 'var(--green)';
+    return `
+      <div style="margin-bottom:0.3rem;">
+        <div style="display:flex;justify-content:space-between;font-size:0.68rem;color:var(--text-dim);margin-bottom:2px;">
+          <span>${labels[i] || 'f' + i}</span>
+          <span style="color:${color}">${pct}%</span>
+        </div>
+        <div style="height:3px;background:rgba(255,255,255,0.07);border-radius:2px;">
+          <div style="height:100%;width:${pct}%;background:${color};border-radius:2px;transition:width 0.6s ease;"></div>
+        </div>
+      </div>`;
+  }).join('');
+}
+
+// ========================================
+// ALERTS — расширенные
+// ========================================
+function checkAlerts(data) {
+  const banner = document.getElementById('alertBanner');
+  const text = document.getElementById('alertText');
+  let msg = null;
+  let priority = 0;
+
+  const cs = data.crossSession || {};
+
+  if (data.riskScore >= 80) {
+    msg = '🔴 КРИТИЧЕСКИЙ риск! Поведение соответствует тяжёлой зависимости. Немедленно остановитесь.';
+    priority = 5;
+  } else if (data.martingaleEvents >= 3 && priority < 4) {
+    msg = '⚠️ Обнаружена стратегия Мартингейла — удвоение ставок после потерь. Это ведёт к быстрому разорению.';
+    priority = 4;
+  } else if (cs.consecutiveDays >= 7 && priority < 3) {
+    msg = `📅 Вы играете ${cs.consecutiveDays} дней подряд. Признак зависимости — установите дни без игры.`;
+    priority = 3;
+  } else if (data.chasingLossEvents >= 4 && priority < 3) {
+    msg = '🚨 Вы явно пытаетесь отыграться. Потери нельзя "отыграть" — каждая ставка независима.';
+    priority = 3;
+  } else if (data.depositsPerSession >= 3 && priority < 2) {
+    msg = '💳 Третье пополнение за сессию. Вы продолжаете тратить больше чем планировали?';
+    priority = 2;
+  } else if (data.betEscalationRate > 0.5 && priority < 2) {
+    msg = '📈 Ваши ставки значительно выросли в ходе сессии. Это признак потери контроля.';
+    priority = 2;
+  } else if (data.sessionLengthMinutes >= 90 && priority < 1) {
+    msg = '⏱️ Вы играете уже ' + data.sessionLengthMinutes + ' минут. Сделайте перерыв — выйдите, выпейте воды.';
+    priority = 1;
+  } else if (cs.sessionsWithHighRisk >= 3 && priority < 1) {
+    msg = '📊 В последних сессиях AI фиксировал высокий риск. Рассмотрите паузу на несколько дней.';
+    priority = 1;
+  }
+
+  if (msg) {
+    text.textContent = msg;
+    banner.classList.add('show');
+    const colors = ['','rgba(255,152,0,0.1)','rgba(255,100,0,0.1)','rgba(255,68,68,0.12)','rgba(255,0,0,0.15)','rgba(180,0,0,0.2)'];
+    banner.style.background = colors[priority] || colors[1];
+  } else {
+    banner.classList.remove('show');
+  }
+}
+
+// ========================================
+// LIVE TICKER
+// ========================================
+const tickerNames = ['Р***ан', 'А***а', 'К***ов', 'Е***а', 'М***т', 'О***ов', 'Б***а'];
+const tickerGames = ['Слоты', 'Рулетка', 'Краш', 'Спорт'];
+
+function renderTicker() {
+  const items = Array.from({length: 12}, () => ({
+    name: tickerNames[Math.floor(Math.random() * tickerNames.length)],
+    game: tickerGames[Math.floor(Math.random() * tickerGames.length)],
+    amount: (Math.random() * 500 + 10).toFixed(2),
+  }));
+
+  const html = [...items, ...items].map(i =>
+    `<div class="ticker-item">
+      <span class="user">${i.name}</span> выиграл
+      <span class="win-amount">$${i.amount}</span>
+      в ${i.game}
+    </div>`
+  ).join('');
+
+  document.getElementById('ticker').innerHTML = html;
+}
+
+// ========================================
+// EXPORT
+// ========================================
+function exportData() {
+  const data = window.tracker.exportJSON();
+  const blob = new Blob([data], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `easymoney_session_${Date.now()}.json`;
+  a.click();
+}
+</script>
+</body>
+</html>

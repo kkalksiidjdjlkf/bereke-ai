@@ -1,0 +1,15 @@
+.venv/
+venv/
+*.pt
+*.pyc
+__pycache__/
+models/
+packages/стартап/models/
+packages/стартап/.venv/
+packages/стартап/venv/
+*.safetensors
+*.bin
+*.onnx
+*.onnx.data
+*.zip
+*.db

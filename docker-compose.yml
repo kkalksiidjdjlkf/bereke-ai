@@ -1,0 +1,163 @@
+version: '3.8'
+
+services:
+  # Main wellbeing monitoring application
+  wellbeing-monitor:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: wellbeing-monitor
+    
+    # Image name and tag
+    image: wellbeing-monitor:latest
+    
+    # Environment variables
+    environment:
+      - PYTHONUNBUFFERED=1
+      - PYTHONDONTWRITEBYTECODE=1
+      - TZ=UTC
+      
+    # Volume mounts for data persistence
+    volumes:
+      # Database storage
+      - ./data:/app/data
+      # Reports output
+      - ./reports:/app/reports
+      # Exported data
+      - ./exports:/app/exports
+      # X11 socket for GUI (if running on Linux)
+      - /tmp/.X11-unix:/tmp/.X11-unix:rw
+      # Audio device (if needed)
+      - /dev/snd:/dev/snd
+      
+    # Port mappings (for future web interface)
+    ports:
+      - "8000:8000"
+      - "8080:8080"
+    
+    # Device access
+    devices:
+      # Video camera
+      - /dev/video0:/dev/video0
+      # Audio devices
+      - /dev/snd:/dev/snd
+      - /dev/dri:/dev/dri
+    
+    # Keep container running
+    stdin_open: true
+    tty: true
+    
+    # Restart policy
+    restart: unless-stopped
+    
+    # Resource limits
+    deploy:
+      resources:
+        limits:
+          cpus: '2'
+          memory: 2G
+        reservations:
+          cpus: '1'
+          memory: 1G
+    
+    # Network configuration
+    networks:
+      - wellbeing-network
+    
+    # Privileged mode for hardware access
+    privileged: true
+    
+    # Logging configuration
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  # PostgreSQL database (optional, for future scalability)
+  postgres:
+    image: postgres:15-alpine
+    container_name: wellbeing-postgres
+    
+    environment:
+      - POSTGRES_USER=wellbeing
+      - POSTGRES_PASSWORD=change_me_in_production
+      - POSTGRES_DB=wellbeing_monitor
+    
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./init-db.sql:/docker-entrypoint-initdb.d/init.sql
+    
+    ports:
+      - "5432:5432"
+    
+    networks:
+      - wellbeing-network
+    
+    restart: unless-stopped
+    
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  # pgAdmin for database management (optional)
+  pgadmin:
+    image: dpage/pgadmin4:latest
+    container_name: wellbeing-pgadmin
+    
+    environment:
+      - PGADMIN_DEFAULT_EMAIL=admin@wellbeing.local
+      - PGADMIN_DEFAULT_PASSWORD=admin
+    
+    ports:
+      - "5050:80"
+    
+    depends_on:
+      - postgres
+    
+    networks:
+      - wellbeing-network
+    
+    restart: unless-stopped
+    
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  # Redis for caching (optional, for future features)
+  redis:
+    image: redis:7-alpine
+    container_name: wellbeing-redis
+    
+    volumes:
+      - redis_data:/data
+    
+    ports:
+      - "6379:6379"
+    
+    networks:
+      - wellbeing-network
+    
+    command: redis-server --appendonly yes
+    
+    restart: unless-stopped
+    
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+# Persistent volumes
+volumes:
+  postgres_data:
+  redis_data:
+
+# Networks
+networks:
+  wellbeing-network:
+    driver: bridge
